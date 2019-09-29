@@ -29,9 +29,9 @@ class WebFundamentus(object):
 
 		return table_list
 
-	
-	def get_ativo(self, papel):
-		return self._get(papel)
+	def getativo(self, papel):
+		papel = self._get(papel)
+		return self._gettablelist(papel)
 
 	def getativolist(self):
 		ativo_list = self._get()
