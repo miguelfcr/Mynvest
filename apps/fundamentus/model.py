@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, Date, Float, BigInteger, ForeignKey, Sequence, create_engine
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship, sessionmaker
+from sqlalchemy.orm import relationship, sessionmaker, joinedload
 
 _Base = declarative_base()
 
@@ -20,6 +20,20 @@ class Controll:
 			session.add(obj)
 		session.commit()
 		session.close()
+
+	def get_ativo(self, papel):
+		session = self.Session()
+		ObjAtivo = session.query(Ativo)\
+						.options(joinedload(Ativo.indicadores))\
+						.options(joinedload(Ativo.balanco))\
+						.options(joinedload(Ativo.demonstrativo))\
+						.filter_by(acao=papel).first()
+		session.close()
+
+		if not ObjAtivo:
+			ObjAtivo = Ativo()
+
+		return ObjAtivo
 
 class Ativo(_Base):
 	__tablename__ = 'ativo'

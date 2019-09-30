@@ -1,3 +1,4 @@
+import traceback
 import pandas as pd
 from datetime import datetime
 from pprint import pprint
@@ -10,47 +11,62 @@ class Controller:
 		self.Controll = Controll()
 
 	def atualiza_lista_ativos(self):
-		ativos_list = WF().getativolist().rename(columns={"Papel": "acao", "Nome Comercial": "nome_empresa"}).to_dict(orient='records')
-		insert_list = []
+		ativos_list = WF().getativolist().rename(columns={"Papel": "acao"}).to_dict(orient='records')
 
-		ativos_list = [ativos_list[60]]
+		for ativo_dict in ativos_list:
+			try:
+				print("Inserindo dados do ativo:  %s" % ativo_dict['acao'])
+				self.atualiza_ativo(ativo_dict['acao'])
+			except IndexError as e:
+				print(traceback.format_exc())
+			except Exception as e:
+				print(traceback.format_exc())
+				return
 
-		try:
-			for ativo_dict in ativos_list:
-				ObjAtivo = self._get_ativo(ativo_dict['acao'])
-				insert_list.append(ObjAtivo)
+	def atualiza_ativo(self, papel):
+		ObjAtivo = self._get_ativo(papel)
+		self.Controll.insert([ObjAtivo])
 
-			self.Controll.insert(insert_list)
-		except Exception as e:
-			print(e)
-		
 	def _get_ativo(self, papel):
 		table_list = WF().getativo(papel)
+
+		ObjAtivo = self.Controll.get_ativo(papel)
 
 		ativo_dict = self._prepara_cabecalho(table_list[0], table_list[1])
 		ativo_dict['indicadores'] = [self._prepara_indicadores(table_list[2])]
 		ativo_dict['balanco'] = [self._prepara_balanco(table_list[3])]
 		ativo_dict['demonstrativo'] = [self._prepara_demonstrativo(table_list[4])]
 		
-		return Ativo(**ativo_dict)
+		# GAMBIARRA MODE ON
+		for key, value in ativo_dict.items():
+			ObjAtivo.__setattr__(key, value)
+		# GAMBIARRA MODE OFF
+
+		return ObjAtivo
 
 	def _formata_campo(self, data, campo=''):
-		newdata = data
 		try:
-			if type(data) == int:
+			newdata = data
+
+			if data == '-':
+				newdata = 0.0
+			elif type(data) == str and data.strip() == '':
+				newdata = ''
+			elif type(data) == int or type(data) == float:
 				newdata = data
 			elif data.count('.') and data.replace('.','').isnumeric():
 				newdata = float(data.replace('.',''))
-			elif data.count('.') and data.count('-'):
+			elif data.count('.') and data.count('-') and not data.count('%'):
 				newdata = float(data.replace('.',''))
 			elif data.count(',') and data.count('%'):
-				newdata = float(data.replace(',','.').replace('%',''))
+				newdata = float(data.replace('.','').replace(',','.').replace('%',''))
 			elif data.count('/'):
 				newdata = data  # Funciona sem formatar a data '-'
 			elif data.isnumeric():
 				newdata = float(data) / 100
 		except Exception as e:
-			print(campo, e)
+			print("Erro no campo: %s, valor: %s" % (campo, data))
+			raise e
 
 		return newdata
 
@@ -94,7 +110,6 @@ class Controller:
 									5: 'marg_liquida', 10: 'div_bruta_patrim',
 								}).to_dict()
 							)
-
 
 		indicadores_dict = {k: self._formata_campo(v, k) for (k,v) in indicadores_dict.items() if type(k) == str}
 		return Indicadores(**indicadores_dict)
