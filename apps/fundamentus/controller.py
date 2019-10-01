@@ -5,6 +5,8 @@ from pprint import pprint
 
 from apps.fundamentus.webservice import WebFundamentus as WF
 from apps.fundamentus.model import Controll, Ativo, Balanco, Demonstrativo, Indicadores
+from apps.fundamentus.Exceptions import (BalancoException, AtivoFundamentusException, 
+										CotacaoException, AtualizacaoException)
 
 class Controller:
 	def __init__(self):
@@ -17,8 +19,9 @@ class Controller:
 			try:
 				print("Inserindo dados do ativo:  %s" % ativo_dict['acao'])
 				self.atualiza_ativo(ativo_dict['acao'])
-			except IndexError as e:
-				print(traceback.format_exc())
+			except (BalancoException, CotacaoException, AtivoFundamentusException, 
+					AtualizacaoException) as b:
+				print(b)
 			except Exception as e:
 				print(traceback.format_exc())
 				return
@@ -28,14 +31,21 @@ class Controller:
 		self.Controll.insert([ObjAtivo])
 
 	def _get_ativo(self, papel):
+		ObjAtivo = self.Controll.get_ativo(papel)
+
+		if ObjAtivo.data_ultima_atualizacao == datetime.today().date():
+			raise AtualizacaoException('Este ativo já foi atualizado na data de hoje')
+
 		table_list = WF().getativo(papel)
 
-		ObjAtivo = self.Controll.get_ativo(papel)
+		if len(table_list) < 5:
+			raise AtivoFundamentusException('Ativo com numero de tables menor que 5')
 
 		ativo_dict = self._prepara_cabecalho(table_list[0], table_list[1])
 		ativo_dict['indicadores'] = [self._prepara_indicadores(table_list[2])]
 		ativo_dict['balanco'] = [self._prepara_balanco(table_list[3])]
 		ativo_dict['demonstrativo'] = [self._prepara_demonstrativo(table_list[4])]
+		ativo_dict['data_ultima_atualizacao'] = datetime.today().date()
 		
 		# GAMBIARRA MODE ON
 		for key, value in ativo_dict.items():
@@ -45,8 +55,12 @@ class Controller:
 		return ObjAtivo
 
 	def _formata_campo(self, data, campo=''):
+		ignore_list = ['acao', 'nome_empresa', 'setor', 'subsetor']
 		try:
 			newdata = data
+
+			if campo in ignore_list:
+				return newdata
 
 			if data == '-':
 				newdata = 0.0
@@ -75,6 +89,24 @@ class Controller:
 		cabecalho_dict.update(cab0[3].rename(index={0:'cotacao', 1:'data_ultima_cotacao'}).to_dict())
 		cabecalho_dict.update(cab1[1].rename(index={0:'valor_mercado', 1:'valor_firma'}).to_dict())
 		cabecalho_dict.update(cab1[3].rename(index={0:'data_ultimo_balanco', 1:'numero_acoes'}).to_dict())
+
+		if not cabecalho_dict['data_ultima_cotacao'] or cabecalho_dict['data_ultima_cotacao'] == '-':
+			raise CotacaoException('Data da última cotação inválida')
+
+		if not cabecalho_dict['data_ultimo_balanco'] or cabecalho_dict['data_ultimo_balanco'] == '-':
+			raise BalancoException('Data do último balanço inválido')
+		
+		# Valida a data do balanço
+		dt_split = cabecalho_dict['data_ultimo_balanco'].split('/')
+		new_dt_balanco = datetime(int(dt_split[2]), int(dt_split[1]), int(dt_split[0]))
+		if (datetime.now() - new_dt_balanco).days > 365:
+			raise BalancoException('Balanço com mais de 365 dias.')
+
+		# Valida a data da cotação
+		dt_split = cabecalho_dict['data_ultima_cotacao'].split('/')
+		new_dt_cotacao = datetime(int(dt_split[2]), int(dt_split[1]), int(dt_split[0]))
+		if (datetime.now() - new_dt_balanco).days > 5:
+			raise CotacaoException('Cotação com mais de 5 dias.')
 
 		return {k: self._formata_campo(v, k) for (k,v) in cabecalho_dict.items() if type(k) == str}
 

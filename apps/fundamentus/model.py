@@ -48,6 +48,7 @@ class Ativo(_Base):
 	numero_acoes = Column(BigInteger)
 	data_ultima_cotacao = Column(Date)
 	data_ultimo_balanco = Column(Date)
+	data_ultima_atualizacao = Column(Date)
 
 	def __repr__(self):
 		return "<Ativo(id='{}', acao='{}', nome empresa={}, setor={}, subsetor={}, cotacao={}, valor mercado={}, valor firma={}, "\
