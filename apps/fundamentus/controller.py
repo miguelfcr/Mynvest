@@ -105,7 +105,7 @@ class Controller:
 		# Valida a data da cotação
 		dt_split = cabecalho_dict['data_ultima_cotacao'].split('/')
 		new_dt_cotacao = datetime(int(dt_split[2]), int(dt_split[1]), int(dt_split[0]))
-		if (datetime.now() - new_dt_balanco).days > 5:
+		if (datetime.now() - new_dt_cotacao).days > 5:
 			raise CotacaoException('Cotação com mais de 5 dias.')
 
 		return {k: self._formata_campo(v, k) for (k,v) in cabecalho_dict.items() if type(k) == str}
