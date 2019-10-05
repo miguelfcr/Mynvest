@@ -42,9 +42,9 @@ class Controller:
 			raise AtivoFundamentusException('Ativo com numero de tables menor que 5')
 
 		ativo_dict = self._prepara_cabecalho(table_list[0], table_list[1])
-		ativo_dict['indicadores'] = [self._prepara_indicadores(table_list[2])]
-		ativo_dict['balanco'] = [self._prepara_balanco(table_list[3])]
-		ativo_dict['demonstrativo'] = [self._prepara_demonstrativo(table_list[4])]
+		ativo_dict['indicadores'] = self._prepara_indicadores(table_list[2])
+		ativo_dict['balanco'] = self._prepara_balanco(table_list[3])
+		ativo_dict['demonstrativo'] = self._prepara_demonstrativo(table_list[4])
 		ativo_dict['data_ultima_atualizacao'] = datetime.today().date()
 		
 		# GAMBIARRA MODE ON

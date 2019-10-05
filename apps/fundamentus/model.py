@@ -35,6 +35,20 @@ class Controll:
 
 		return ObjAtivo
 
+	def get_ativos(self):
+		session = self.Session()
+		object_list = session.query(Ativo)\
+						.options(joinedload(Ativo.indicadores))\
+						.options(joinedload(Ativo.balanco))\
+						.options(joinedload(Ativo.demonstrativo))\
+						.all()
+		session.close()
+
+		if not object_list:
+			return []
+		
+		return object_list
+
 class Ativo(_Base):
 	__tablename__ = 'ativo'
 	id = Column(Integer, Sequence('ativo_id_seq'), primary_key=True)
@@ -109,10 +123,11 @@ Balanco.ativo = relationship("Ativo", back_populates="balanco")
 Demonstrativo.ativo = relationship("Ativo", back_populates="demonstrativo")
 Indicadores.ativo = relationship("Ativo", back_populates="indicadores")
 
-Ativo.indicadores = relationship("Indicadores", order_by=Indicadores.id, back_populates="ativo")
-Ativo.balanco = relationship("Balanco", order_by=Balanco.id, back_populates="ativo")
-Ativo.demonstrativo = relationship("Demonstrativo", order_by=Demonstrativo.id, back_populates="ativo")
+Ativo.indicadores = relationship("Indicadores", uselist=False, back_populates="ativo")
+Ativo.balanco = relationship("Balanco", uselist=False, back_populates="ativo")
+Ativo.demonstrativo = relationship("Demonstrativo", uselist=False, back_populates="ativo")
 
 if __name__ == "__main__":
 	C = Controll()
-	C.recreate_database()
+	#C.recreate_database()
+	C.get_ativos()
