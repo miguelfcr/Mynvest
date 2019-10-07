@@ -25,11 +25,11 @@ class Analise:
 	def __init__(self):
 		self.Controll = Controll()
 	
-	def analize_ativo(self, papel):
+	def analise_ativo(self, papel):
 		ObjAtivo = self.Controll.get_ativo(papel)
 		self._do_analize([ObjAtivo], fodase=True)
 
-	def analize_todas(self):
+	def analise_todas(self):
 		obj_ativo_list = self.Controll.get_ativos()
 		self._do_analize(obj_ativo_list)
 
@@ -41,7 +41,7 @@ class Analise:
 			for metodo in ANALISE_LIST:
 				pontuacao = eval("self.%s(ObjAtivo, pontuacao)" % metodo)
 
-			if pontuacao > 0 or fodase:
+			if pontuacao > 8 or fodase:
 				result_list.append({'acao':ObjAtivo.acao, 'pontuacao':pontuacao})
 
 		result_list = sorted(result_list, key = lambda i: i['pontuacao'], reverse=True)
@@ -218,5 +218,5 @@ class Analise:
 
 if __name__ == "__main__":
 	A = Analise()
-	#A.analize_todas()
-	A.analize_ativo('LINX3')
+	A.analise_todas()
+	#A.analise_ativo('TAEE4')
