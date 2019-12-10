@@ -6,7 +6,7 @@ _Base = declarative_base()
 
 class Controll:
 	def __init__(self):
-		database_uri = 'postgres+psycopg2://postgres:postgres@localhost:5432/mynvest'
+		database_uri = 'postgres+psycopg2://mynvest:mynvest@localhost:5432/mynvest'
 		self.engine = create_engine(database_uri)
 		self.Session = sessionmaker(bind=self.engine)
 
@@ -130,4 +130,4 @@ Ativo.demonstrativo = relationship("Demonstrativo", uselist=False, back_populate
 if __name__ == "__main__":
 	C = Controll()
 	#C.recreate_database()
-	C.get_ativos()
+	#C.get_ativos()
