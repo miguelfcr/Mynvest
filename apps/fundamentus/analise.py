@@ -203,15 +203,14 @@ class Analise:
 	# DESCONTOS
 	def _calcula_PatrimLiq(self, ObjAtivo, pontuacao):
 		patrimonio_liquido = ObjAtivo.balanco.patrimonio_liquido
-
-		if patrimonio_liquido <= 0:
+		if patrimonio_liquido and patrimonio_liquido <= 0:
 			pontuacao -= 20.0
 		
 		return pontuacao
 	
 	def _calcula_LucroLiq12(self, ObjAtivo, pontuacao):
 		lucro_liquido_12 = ObjAtivo.demonstrativo.lucro_liquido_12
-		if lucro_liquido_12 <= 0:
+		if lucro_liquido_12 and lucro_liquido_12 <= 0:
 			pontuacao -= 20.0
 		
 		return pontuacao

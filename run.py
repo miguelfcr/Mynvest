@@ -23,3 +23,6 @@ if __name__ == "__main__":
 
 	elif "analise" in sys.argv:
 		run("analise")
+	
+	else:
+		print('makedb, getativos, analise')
