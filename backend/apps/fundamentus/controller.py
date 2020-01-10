@@ -1,7 +1,8 @@
 import traceback
 import pandas as pd
+import logging as log
+
 from datetime import datetime
-from pprint import pprint
 
 from apps.fundamentus.webservice import WebFundamentus as WF
 from apps.fundamentus.model import Controll, Ativo, Balanco, Demonstrativo, Indicadores
@@ -12,19 +13,25 @@ class Controller:
 	def __init__(self):
 		self.Controll = Controll()
 
+	def recreate_database(self):
+		try:
+			if Controll().recreate_database():
+				return "Tabelas criada com sucesso."
+		except Exception as e:
+			return "Erro ao criar tabelas {}".format(e)
+
 	def atualiza_lista_ativos(self):
 		ativos_list = WF().getativolist().rename(columns={"Papel": "acao"}).to_dict(orient='records')
 
 		for ativo_dict in ativos_list:
 			try:
-				print("Inserindo dados do ativo:  %s" % ativo_dict['acao'])
+				log.info('Atualizando ativo {}'.format(ativo_dict['acao']))
 				self.atualiza_ativo(ativo_dict['acao'])
 			except (BalancoException, CotacaoException, AtivoFundamentusException, 
 					AtualizacaoException) as b:
-				print(b)
+				log.warn("Ativo: {}, {}".format(ativo_dict['acao'], b))
 			except Exception as e:
-				print(traceback.format_exc())
-				return
+				return "Erro ao atualizar registros {} \n {}".format(e, traceback.format_exc())	
 
 	def atualiza_ativo(self, papel):
 		ObjAtivo = self._get_ativo(papel)
@@ -75,7 +82,7 @@ class Controller:
 			elif data.count(',') and data.count('%'):
 				newdata = float(data.replace('.','').replace(',','.').replace('%',''))
 			elif data.count('/'):
-				newdata = data  # Funciona sem formatar a data '-'
+				newdata = datetime.strptime(data, '%d/%m/%Y')
 			elif data.isnumeric():
 				newdata = float(data) / 100
 		except Exception as e:

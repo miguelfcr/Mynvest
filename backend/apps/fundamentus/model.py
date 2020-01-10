@@ -6,13 +6,14 @@ _Base = declarative_base()
 
 class Controll:
 	def __init__(self):
-		database_uri = 'postgres+psycopg2://mynvest:mynvest@localhost:5432/mynvest'
+		database_uri = 'postgres+psycopg2://mynvest:mynvest@db:5432/mynvest'
 		self.engine = create_engine(database_uri)
 		self.Session = sessionmaker(bind=self.engine)
 
 	def recreate_database(self):
 		_Base.metadata.drop_all(self.engine)
 		_Base.metadata.create_all(self.engine)
+		return True
 
 	def insert(self, object_list):
 		session = self.Session()
