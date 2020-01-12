@@ -1,16 +1,25 @@
 version: '3'
 volumes: 
     dados:
+networks: 
+    app_db:
+        driver: bridge
 services: 
     db:
-        image: postgres:9.6
+        image: postgres:12
         volumes: 
             - dados:/var/lib/postgresql/data
             - ./scripts:/scripts
             - ./scripts/init.sql:/docker-entrypoint-initdb.d/init.sql
+        networks: 
+            - app_db
     backend:
         build: ./backend
         ports: 
             - 5000:5000
         volumes: 
             - ./backend:/code
+        networks: 
+            - app_db
+        depends_on: 
+            - db
