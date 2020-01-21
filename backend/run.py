@@ -1,5 +1,5 @@
 from flask import Flask
-from apps.fundamentus.controller import Controller
+from backend.apps.fundamentus.controller import Controller
 
 app = Flask(__name__)
 

@@ -4,11 +4,6 @@ from bs4 import BeautifulSoup
 
 class WebFundamentus(object):
 
-	def __new__(cls, *args, **kwargs):
-		if not hasattr(cls, '_instance'):
-			cls._instance = super(WebFundamentus, cls).__new__(cls, *args, **kwargs)
-		return cls._instance
-
 	def __init__(self):
 		self.link_base = "https://www.fundamentus.com.br/"
 
