@@ -3,22 +3,15 @@ import pandas as pd
 import logging as log
 
 from datetime import datetime
+from pprint import pprint
 
+from apps.repo.mongo import MongoRepo
 from apps.fundamentus.webservice import WebFundamentus as WF
-from apps.fundamentus.model import Controll, Ativo, Balanco, Demonstrativo, Indicadores
-from apps.fundamentus.Exceptions import (BalancoException, AtivoFundamentusException, 
-										CotacaoException, AtualizacaoException)
+from apps.fundamentus.Exceptions import (BalancoException, AtivoFundamentusException, CotacaoException)
 
 class Controller:
 	def __init__(self):
-		self.Controll = Controll()
-
-	def recreate_database(self):
-		try:
-			if Controll().recreate_database():
-				return "Tabelas criada com sucesso."
-		except Exception as e:
-			return "Erro ao criar tabelas {}".format(e)
+		self.MongoRepo = MongoRepo()
 
 	def atualiza_lista_ativos(self):
 		ativos_list = WF().getativolist().rename(columns={"Papel": "acao"}).to_dict(orient='records')
@@ -27,39 +20,32 @@ class Controller:
 			try:
 				log.info('Atualizando ativo {}'.format(ativo_dict['acao']))
 				self.atualiza_ativo(ativo_dict['acao'])
-			except (BalancoException, CotacaoException, AtivoFundamentusException, 
-					AtualizacaoException) as b:
-				log.warn("Ativo: {}, {}".format(ativo_dict['acao'], b))
+			except (BalancoException, CotacaoException, AtivoFundamentusException) as b:
+				log.warning("Ativo: {}, {}".format(ativo_dict['acao'], b))
 			except Exception as e:
-				return "Erro ao atualizar registros {} \n {}".format(e, traceback.format_exc())	
+				return "Erro ao atualizar registros {} \n {}".format(e, traceback.format_exc())
 
 	def atualiza_ativo(self, papel):
-		ObjAtivo = self._get_ativo(papel)
-		self.Controll.insert([ObjAtivo])
-
-	def _get_ativo(self, papel):
-		ObjAtivo = self.Controll.get_ativo(papel)
-
-		if ObjAtivo.data_ultima_atualizacao == datetime.today().date():
-			raise AtualizacaoException('Este ativo já foi atualizado na data de hoje')
-
+		table_list = self._get_table_list(papel)
+		ativo_dict = self._prepara_ativo_dict(table_list)
+		self.MongoRepo.update_insert({'acao': papel}, ativo_dict)
+	
+	def _get_table_list(self, papel):
 		table_list = WF().getativo(papel)
 
 		if len(table_list) < 5:
 			raise AtivoFundamentusException('Ativo com numero de tables menor que 5')
 
+		return table_list
+
+	def _prepara_ativo_dict(self, table_list):
 		ativo_dict = self._prepara_cabecalho(table_list[0], table_list[1])
 		ativo_dict['indicadores'] = self._prepara_indicadores(table_list[2])
 		ativo_dict['balanco'] = self._prepara_balanco(table_list[3])
 		ativo_dict['demonstrativo'] = self._prepara_demonstrativo(table_list[4])
-		ativo_dict['data_ultima_atualizacao'] = datetime.today().date()
-		
-		# GAMBIARRA MODE ON
-		for key, value in ativo_dict.items():
-			ObjAtivo.__setattr__(key, value)
-		# GAMBIARRA MODE OFF
+		ativo_dict['data_ultima_atualizacao'] = datetime.today()
 
-		return ObjAtivo
+		return ativo_dict
 
 	def _formata_campo(self, data, campo=''):
 		ignore_list = ['acao', 'nome_empresa', 'setor', 'subsetor']
@@ -122,14 +108,16 @@ class Controller:
 		balanco_dict.update(bal[3].rename(index={1:'divida_bruta', 2:'divida_liquida', 3:'patrimonio_liquido'}).to_dict())
 		
 		balanco_dict = {k: self._formata_campo(v, k) for (k,v) in balanco_dict.items() if type(k) == str}
-		return Balanco(**balanco_dict)
+
+		return balanco_dict
 
 	def _prepara_demonstrativo(self, dem):
 		demonstrativo_dict = dem[1].rename(index={2:'receita_liquida_12', 3:'ebit_12', 4:'lucro_liquido_12'}).to_dict()
 		demonstrativo_dict.update(dem[3].rename(index={2:'receita_liquida_3',  3:'ebit_3',  4:'lucro_liquido_3'}).to_dict())
 
 		demonstrativo_dict = {k: self._formata_campo(v, k) for (k,v) in demonstrativo_dict.items() if type(k) == str}
-		return Demonstrativo(**demonstrativo_dict)
+		
+		return demonstrativo_dict
 
 	def _prepara_indicadores(self, ind):
 		indicadores_dict = ind[3].rename(index={
@@ -140,20 +128,19 @@ class Controller:
 									5: 'p_ativos', 11: 'cres_rec5',
 									6: 'p_cap_giro'}).to_dict()
 
-		indicadores_dict.update(
-								ind[5].rename(index={
+		indicadores_dict.update(ind[5].rename(index={
 									1: 'lpa', 6: 'ebit_ativo',
 									2: 'vpa', 7: 'roic',
 									3: 'marg_bruta', 8: 'roe',
 									4: 'marg_ebit', 9: 'liquidez_corr',
 									5: 'marg_liquida', 10: 'div_bruta_patrim',
-								}).to_dict()
-							)
+								}).to_dict())
 
 		indicadores_dict = {k: self._formata_campo(v, k) for (k,v) in indicadores_dict.items() if type(k) == str}
-		return Indicadores(**indicadores_dict)
 
+		return indicadores_dict
 
 if __name__ == "__main__":
 	C = Controller()
-	C.atualiza_lista_ativos()
+	C.atualiza_ativo('AALR3')
+	#C.atualiza_lista_ativos()

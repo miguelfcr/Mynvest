@@ -7,10 +7,6 @@ app = Flask(__name__)
 def index():
     return "<h1>Tamo rodando galego<h1>"
 
-@app.route('/create')
-def create():
-    return Controller().recreate_database()
-
 @app.route('/atualiza')
 def atualiza():
     return Controller().atualiza_lista_ativos()
