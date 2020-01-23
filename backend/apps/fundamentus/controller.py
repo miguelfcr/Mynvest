@@ -3,7 +3,7 @@ import logging as log
 
 from datetime import datetime
 
-from apps.repo.mongo import MongoRepo
+from repo.mongo import MongoRepo
 from apps.fundamentus.webservice.controller import WebServiceController
 from Exceptions import (BalancoException, AtivoFundamentusException, CotacaoException)
 
@@ -45,5 +45,5 @@ class Controller:
 
 if __name__ == "__main__":
 	C = Controller()
-	#C.atualiza_ativo('AALR3')
-	C.atualiza_lista_ativos()
+	C.atualiza_ativo('AALR3')
+	#C.atualiza_lista_ativos()
