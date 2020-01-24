@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from .webservice import WebFundamentus
+from .webfundamentus import WebFundamentus
 from ..Exceptions import AtivoFundamentusException
 
 class WebServiceController:
@@ -8,7 +8,7 @@ class WebServiceController:
 		self.WF = WebFundamentus()
 
 	def get_papel_list(self):
-		ativos_pd = self.WF.getativolist().rename(columns={"Papel": "acao", 
+		ativos_pd = self.WF.get_ativos_table().rename(columns={"Papel": "acao", 
 												"Nome Comercial": "nome_empresa"})
 		return ativos_pd.to_dict(orient='records')
 
@@ -18,7 +18,7 @@ class WebServiceController:
 		return ativo_dict
 		
 	def _get_table_list(self, papel):
-		table_list = self.WF.getativo(papel)
+		table_list = self.WF.get_ativo_table_list(papel)
 
 		if len(table_list) < 5:
 			raise AtivoFundamentusException('Ativo com numero de tables menor que 5')
