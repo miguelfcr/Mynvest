@@ -12,8 +12,8 @@ class MongoRepo:
         row_id = self.collection.insert_one(row).inserted_id
         return row_id
 
-    def select(self, query_dict):
-        row_list = self.collection.find(query_dict)
+    def select(self, query_dict, limit=999999):
+        row_list = self.collection.find(query_dict).limit(limit)
         return row_list
 
     def select_one(self, query_dict):
