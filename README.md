@@ -1,2 +1,3 @@
 # Mynvest
-Projeto Python para analise de ativos da bolsa utilizando Pandas e SQLAlchemy -- Estudo
+Projeto de estudo pessoal em python, voltado para a área de financeira.
+
