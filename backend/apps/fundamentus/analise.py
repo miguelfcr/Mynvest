@@ -1,6 +1,6 @@
 import traceback
 from pprint import pprint
-from apps.fundamentus.model import Controll, Ativo
+from apps.fundamentus.model import Controll
 
 ANALISE_LIST = [
 	# Max 1,5 ponto (total 15)

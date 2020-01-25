@@ -6,6 +6,3 @@ class AtivoFundamentusException(Exception):
 
 class CotacaoException(Exception):
 	pass
-
-class AtualizacaoException(Exception):
-	pass

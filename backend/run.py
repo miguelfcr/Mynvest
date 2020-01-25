@@ -1,15 +1,11 @@
 from flask import Flask
-from apps.fundamentus.controller import Controller
+from backend.apps.fundamentus.controller import Controller
 
 app = Flask(__name__)
 
 @app.route('/')
 def index():
     return "<h1>Tamo rodando galego<h1>"
-
-@app.route('/create')
-def create():
-    return Controller().recreate_database()
 
 @app.route('/atualiza')
 def atualiza():
