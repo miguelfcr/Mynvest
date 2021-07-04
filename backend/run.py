@@ -11,5 +11,7 @@ def index():
 def atualiza():
     return Controller().atualiza_lista_ativos()
 
+
+
 if __name__ == "__main__":
     app.run(host='0.0.0.0', debug=True)

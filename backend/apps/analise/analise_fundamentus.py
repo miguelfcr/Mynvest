@@ -1,6 +1,6 @@
 import traceback
 from pprint import pprint
-from apps.fundamentus.model import Controll
+from .analise import Analise
 
 ANALISE_LIST = [
 	# Max 1,5 ponto (total 15)
@@ -21,19 +21,16 @@ ANALISE_LIST = [
 	"_calcula_LucroLiq12",
 ]
 
-class Analise:
+class AnaliseFundametus:
+
 	def __init__(self):
-		self.Controll = Controll()
-	
-	def analise_ativo(self, papel):
-		ObjAtivo = self.Controll.get_ativo(papel)
-		self._do_analize([ObjAtivo], fodase=True)
+		self.A = Analise()
 
 	def analise_todas(self):
-		obj_ativo_list = self.Controll.get_ativos()
-		self._do_analize(obj_ativo_list)
+		self.A.get_ativos_where({'cotacao': {"$lt": 20.0}})
 
-	def _do_analize(self, obj_ativo_list, fodase=False):
+	def _do_analize(self, fodase=False):
+		obj_ativo_list = self.A.ativo_list
 		result_list = []
 		for ObjAtivo in obj_ativo_list:
 			pontuacao = 0.0

@@ -3,9 +3,9 @@ import logging as log
 
 from datetime import datetime
 
-from repos.mongo import MongoRepo
-from apps.fundamentus.webservice.controller import WebServiceController
-from Exceptions import (BalancoException, AtivoFundamentusException, CotacaoException)
+from ...repos.mongo import MongoRepo
+from .webservice.controller import WebServiceController
+from .Exceptions import (BalancoException, AtivoFundamentusException, CotacaoException)
 
 class Controller:
 	def __init__(self):
@@ -40,8 +40,8 @@ class Controller:
 		if (datetime.now() - ativo_dict['data_ultimo_balanco']).days > 365:
 			raise BalancoException('Balanço com mais de 365 dias.')
 
-		if (datetime.now() - ativo_dict['data_ultima_cotacao']).days > 5:
-			raise CotacaoException('Cotação com mais de 5 dias.')
+		if (datetime.now() - ativo_dict['data_ultima_cotacao']).days > 3:
+			raise CotacaoException('Cotação com mais de 3 dias.')
 
 if __name__ == "__main__":
 	C = Controller()

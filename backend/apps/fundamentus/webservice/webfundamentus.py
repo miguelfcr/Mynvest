@@ -1,4 +1,4 @@
-from services.webservice import Webservice
+from ....services.webservice import Webservice
 
 class WebFundamentus(Webservice):
 

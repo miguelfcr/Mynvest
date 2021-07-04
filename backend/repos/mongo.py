@@ -1,10 +1,10 @@
 from pymongo import MongoClient
 
-DNS_PADRAO = 'mongodb+srv://mongodb:mongoDB@cluster0-vvgvw.mongodb.net/test?retryWrites=true&w=majority'
+DNS_PADRAO = 'mongodb+srv://mynvest:mynvest@cluster0.6dv4w.mongodb.net/myFirstDatabase?retryWrites=true&w=majority'
 
 class MongoRepo:
-    def __init__(self, dns=DNS_PADRAO, base="mynvest", collection="fundamentus"):
-        client = MongoClient(dns)
+    def __init__(self, dns=DNS_PADRAO, base="mynvest", collection="acoes"):
+        client = MongoClient(DNS_PADRAO)
         self.db = client[base]
         self.collection = self.db[collection]
 
@@ -21,12 +21,12 @@ class MongoRepo:
         return row_dict
 
     def update_one(self, where_dict, update_dict):
-        row_modified = self.collection.update_one(where_dict, {'$set': update_dict}).modified_count
-        return row_modified
+        modified_count = self.collection.update_one(where_dict, {'$set': update_dict}).modified_count
+        return modified_count
 
     def delete_one(self, where_dict):
-        row_modified = self.collection.delete_one(where_dict).modified_count
-        return row_modified
+        deleted_count = self.collection.delete_one(where_dict).deleted_count
+        return deleted_count
     
     def update_insert(self, where_dict, update_dict):
         row_id = self.collection.update(where_dict, update_dict, upsert=True)
